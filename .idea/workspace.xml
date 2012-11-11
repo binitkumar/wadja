@@ -22,10 +22,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="api_spec.rb" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="api_spec.rb" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/spec/request/api_spec.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="85" column="50" selection-start="3122" selection-end="3122" vertical-scroll-proportion="0.522807">
+            <state line="85" column="50" selection-start="3122" selection-end="3122" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Gemfile" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Gemfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="7" selection-start="162" selection-end="162" vertical-scroll-proportion="0.23327616">
               <folding />
             </state>
           </provider>
@@ -78,12 +87,12 @@
         <option value="$PROJECT_DIR$/spec/factories/point.rb" />
         <option value="$PROJECT_DIR$/spec/spec_helper.rb" />
         <option value="C:/Ruby193/lib/ruby/gems/1.9.1/gems/factory_girl-4.1.0/lib/factory_girl/find_definitions.rb" />
-        <option value="$PROJECT_DIR$/Gemfile" />
         <option value="$PROJECT_DIR$/spec/factories/notification.rb" />
         <option value="$PROJECT_DIR$/app/models/user.rb" />
         <option value="$PROJECT_DIR$/app/api/wadja/api.rb" />
         <option value="$PROJECT_DIR$/spec/factories/factories.rb" />
         <option value="$PROJECT_DIR$/spec/request/api_spec.rb" />
+        <option value="$PROJECT_DIR$/Gemfile" />
       </list>
     </option>
   </component>
@@ -627,13 +636,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Gemfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="39" selection-start="644" selection-end="644" vertical-scroll-proportion="0.37907377">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/spec/spec_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="40" column="73" selection-start="1525" selection-end="1525" vertical-scroll-proportion="0.8250429">
@@ -664,7 +666,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/spec/request/api_spec.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="85" column="50" selection-start="3122" selection-end="3122" vertical-scroll-proportion="0.522807">
+        <state line="85" column="50" selection-start="3122" selection-end="3122" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Gemfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="7" selection-start="162" selection-end="162" vertical-scroll-proportion="0.23327616">
           <folding />
         </state>
       </provider>
