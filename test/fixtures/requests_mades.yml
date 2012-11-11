@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  user_id: 1
+  requested_user_id: 1
+  type_id: 1
+  status_id: 1
+  date_sent: 2012-11-10 00:40:14
+
+two:
+  user_id: 1
+  requested_user_id: 1
+  type_id: 1
+  status_id: 1
+  date_sent: 2012-11-10 00:40:14
