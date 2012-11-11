@@ -5,6 +5,7 @@ module Wadja
 
   class API < Grape::API
     format :json
+    version 'v1', :using => :path
 
     resource :auth do
       post "authenticate" do

@@ -31,10 +31,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Gemfile" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Gemfile" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Gemfile">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="7" selection-start="162" selection-end="162" vertical-scroll-proportion="0.23327616">
+            <state line="8" column="7" selection-start="162" selection-end="162" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -58,10 +58,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="api.rb" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="api.rb" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/api/wadja/api.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="121" column="11" selection-start="4066" selection-end="4066" vertical-scroll-proportion="0.0">
+            <state line="7" column="33" selection-start="129" selection-end="129" vertical-scroll-proportion="0.20411664">
               <folding />
             </state>
           </provider>
@@ -89,10 +89,10 @@
         <option value="C:/Ruby193/lib/ruby/gems/1.9.1/gems/factory_girl-4.1.0/lib/factory_girl/find_definitions.rb" />
         <option value="$PROJECT_DIR$/spec/factories/notification.rb" />
         <option value="$PROJECT_DIR$/app/models/user.rb" />
-        <option value="$PROJECT_DIR$/app/api/wadja/api.rb" />
         <option value="$PROJECT_DIR$/spec/factories/factories.rb" />
         <option value="$PROJECT_DIR$/spec/request/api_spec.rb" />
         <option value="$PROJECT_DIR$/Gemfile" />
+        <option value="$PROJECT_DIR$/app/api/wadja/api.rb" />
       </list>
     </option>
   </component>
@@ -650,13 +650,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/api/wadja/api.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="121" column="11" selection-start="4066" selection-end="4066" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/spec/factories/factories.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state line="24" column="16" selection-start="592" selection-end="592" vertical-scroll-proportion="0.0">
@@ -673,7 +666,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Gemfile">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="7" selection-start="162" selection-end="162" vertical-scroll-proportion="0.23327616">
+        <state line="8" column="7" selection-start="162" selection-end="162" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/api/wadja/api.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="33" selection-start="129" selection-end="129" vertical-scroll-proportion="0.20411664">
           <folding />
         </state>
       </provider>
