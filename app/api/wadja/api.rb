@@ -26,11 +26,11 @@ module Wadja
           response_hash['meta']['error_message'] = nil
           response_hash['data'] = authentication_details.get_details
           token = SecureRandom.urlsafe_base64(16)
+
           user = User.find_by_username params[:username] if params[:username]
           user = User.find_by_email params[:email] if params[:email]
+          user.update_attribute(:authentication_token,token)
 
-          user.authentication_token = token
-          user.save
           response_hash['data']['authentication_token'] = token
         else
           status 400
@@ -43,6 +43,27 @@ module Wadja
         if params[:email].nil? && params[:username].nil?
           response_hash['meta']['code'] = '100'
           response_hash['meta']['error_message'] = "Username & Email unavailable in parameter "
+          response_hash['data'] = nil
+          status 400
+        end
+        response_hash
+      end
+
+      get ":id/killsession/:authentication_token" do
+        response_hash = Hash.new
+        response_hash['meta']= Hash.new
+        response_hash['data']= Hash.new
+
+        user = User.find_by_id(params[:id])
+        orig_user= User.find_by_authentication_token(params[:authentication_token])
+        if user == orig_user
+          user.update_attribute(:authentication_token,nil)
+          response_hash['meta']['code'] = '000'
+          response_hash['data'] = 'Logout successful'
+          response_hash['meta']['error_message'] = nil
+        else
+          response_hash['meta']['code'] = '100'
+          response_hash['meta']['error_message'] = "Invalid user credentials"
           response_hash['data'] = nil
           status 400
         end
@@ -82,7 +103,7 @@ module Wadja
 		    response_hash
       end
       
-      get  do
+      get :authentication_token do
         response = Hash.new
         response['meta'] = Hash.new
         response['data'] = nil
@@ -92,7 +113,7 @@ module Wadja
         response
       end
       
-      get ':id' do
+      get ':id/get/:authentication_token' do
         @response = Hash.new
         @response['meta'] = Hash.new
 
@@ -123,29 +144,38 @@ module Wadja
         @response
       end
 
-      put ':id' do
+      put ':id/update/:authentication_token' do
         response_hash = Hash.new
         response_hash['meta']= Hash.new
         response_hash['data']= Hash.new
         begin
           user = User.where(:id=>params[:id]).first
-          params[:user].each do |key,value|
-            user[key] = value
-          end
+          orig_user = User.where(:authentication_token=>params[:authentication_token]).first
 
-          if user.valid?
-            response_hash['data']['userid']= user.id
-            response_hash['data']['username']=user.username
-            response_hash['meta']['code'] = '000'
-            user.save
-            status 200
+          if user == orig_user
+            params[:user].each do |key,value|
+              user[key] = value
+            end
+
+            if user.valid?
+              response_hash['data']['userid']= user.id
+              response_hash['data']['username']=user.username
+              response_hash['meta']['code'] = '000'
+              user.save
+              status 200
+            else
+              response_hash['meta']['error_message'] = user.errors
+              response_hash['data']= nil
+              status 400
+              response_hash['meta']['code'] = '100'
+              response_hash['meta']['code'] = '002' if user.errors['username'] == ["has already been taken"]
+              response_hash['meta']['code'] = '001' if user.errors['email'] == ["has already been taken"]
+            end
           else
-            response_hash['meta']['error_message'] = user.errors
             response_hash['data']= nil
-            status 400
-            response_hash['meta']['code'] = '100'
-            response_hash['meta']['code'] = '002' if user.errors['username'] == ["has already been taken"]
-            response_hash['meta']['code'] = '001' if user.errors['email'] == ["has already been taken"]
+            status 401
+            response_hash['meta']['code'] = "100"
+            response_hash['meta']['error_message'] = "Invalid user credentials"
           end
         rescue
           response_hash['data'] = nil

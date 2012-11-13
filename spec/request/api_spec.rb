@@ -84,20 +84,90 @@ describe Wadja::API do
     end
   end
 
-  describe "GET /users/:id" do
+  describe "GET /auth/:id/killsession/:authentication_token" do
 
-      it "returns invalid id if user id is nil" do
-        get "/v1/users"
-        last_response.status.should == 404
+    #Initializing parmeters before each request
+    before :each do
+      @param = { :birth_date=>  Date.today.strftime("%Y-%m-%d"),:country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> false }
+      @username_password = {:username=>'TestUser', :password=>'123456'}
+      @email_password    = {:email=>'test@test.com', :password=>'123456'}
 
-        response_json = JSON.parse(last_response.body)
-        response_json['data'].should == nil
-        response_json['meta']['code'].should == '100'
-        response_json['meta']['error_message'].should == 'ID parameter not found'
-      end
+      post "/v1/users", "user"=> @param
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      @user_id = response_json['data']['userid']
+
+      post "/v1/auth/authenticate" , @username_password.to_json
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      @authentication_token = response_json['data']['authentication_token']
+
+    end
+
+    it " terminates the session and updates authentication token to nil with valid user id and authentication token" do
+      get "/v1/auth/#{@user_id}/killsession/#{@authentication_token}"
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      response_json['data'].should == 'Logout successful'
+      response_json['meta']['code'].should == '000'
+      response_json['meta']['error_message'].should == nil
+    end
+
+    it " doesn't allow logout for invaid user id" do
+      @user_id = 100
+      get "/v1/auth/#{@user_id}/killsession/#{@authentication_token}"
+      last_response.status.should == 400
+      response_json = JSON.parse(last_response.body)
+      response_json['data'].should == nil
+      response_json['meta']['code'].should == '100'
+      response_json['meta']['error_message'].should == "Invalid user credentials"
+    end
+
+    it "does not allow user to access profile after signout" do
+      get "/v1/auth/#{@user_id}/killsession/#{@authentication_token}"
+      last_response.status.should == 200
+
+      put "/v1/users/#{@user_id}/update/#{@authentication_token}", "user"=> @param
+      last_response.status.should == 401
+
+      response_json = JSON.parse(last_response.body)
+      response_json['data'].should == nil
+      response_json['meta']['code'].should == '100'
+      response_json['meta']['error_message'].should == "Invalid user credentials"
+    end
+
+  end
+
+  describe "GET /users/:id/get/:authentication_token" do
+
+    before :each do
+      @param = { :birth_date=>  Date.today.strftime("%Y-%m-%d"),:country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> false }
+      @username_password = {:username=>'TestUser', :password=>'123456'}
+      @email_password    = {:email=>'test@test.com', :password=>'123456'}
+
+      post "/v1/users", "user"=> @param
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      user_id = response_json['data']['userid']
+
+      post "/v1/auth/authenticate" , @username_password.to_json
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      @authentication_token = response_json['data']['authentication_token']
+    end
+
+      #it "returns invalid id if user id is nil" do
+      #  get "/v1/users//get/#{@authentication_token}"
+      #  last_response.status.should == 404
+
+      #  response_json = JSON.parse(last_response.body)
+      #  response_json['data'].should == nil
+      #  response_json['meta']['code'].should == '100'
+      #  response_json['meta']['error_message'].should == 'ID parameter not found'
+      #end
 
       it "returns nil on user id not available" do
-        get "/v1/users/1000"
+        get "/v1/users/1000/get/#{@authentication_token}"
         last_response.status.should == 404
 
         response_json = JSON.parse(last_response.body)
@@ -118,14 +188,14 @@ describe Wadja::API do
 
         #todo Please be clarified with request field
 
-        get "/v1/users/#{user.id}"
+        get "/v1/users/#{user.id}/get/#{@authentication_token}"
         last_response.status.should == 200
 
         response_json = JSON.parse(last_response.body)
         response_json['data']['id'].should == user.id
-        response_json['data']['username'].should == 'TestUser'
+        response_json['data']['username'].should == 'Test100User'
         response_json['data']['name'].should == 'Test user'
-        response_json['data']['email'].should == 'test@test.com'
+        response_json['data']['email'].should == 'test100@test.com'
         response_json['data']['email_verified'].should == true
         response_json['data']['country_iso'].should == user.country.iso
         response_json['data']['birth_date'].should == user.birth_date.strftime("%d/%m/%Y")
@@ -146,7 +216,7 @@ describe Wadja::API do
       end
 
       it "returns invalid integer for alphanumeric id" do
-        get "/v1/users/1ab"
+        get "/v1/users/1ab/get/#{@authentication_token}"
         last_response.status.should == 404
 
         response_json = JSON.parse(last_response.body)
@@ -309,41 +379,47 @@ describe Wadja::API do
     end
   end
 
-  describe "PUT /users/:id" do
+  describe "PUT /users/:id/update/:authentication_token" do
     before :each do
       @param = { :birth_date=>  Date.today.strftime("%Y-%m-%d"),:country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> false }
+      @username_password = {:username=>'TestUser', :password=>'123456'}
+      @email_password    = {:email=>'test@test.com', :password=>'123456'}
+
+      post "/v1/users", "user"=> @param
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      @user_id = response_json['data']['userid']
+
+      post "/v1/auth/authenticate" , @username_password.to_json
+      last_response.status.should == 200
+      response_json = JSON.parse(last_response.body)
+      @authentication_token = response_json['data']['authentication_token']
     end
 
     it "upates user with valid parameters" do
-      post "/v1/users", "user"=>@param
-      last_response.status.should == 200
-      response_json = JSON.parse(last_response.body)
-      user_id = response_json['data']['userid']
-      @param['username'] = "Test1User"
-      put "/v1/users/#{user_id}",:user=>@param
+
+      @param["email"] = 'test@test.com'
+      @param['username'] = 'Test3User'
+      put "/v1/users/#{@user_id}/update/#{@authentication_token}", "user"=> @param
       last_response.status.should == 200
 
-      get "/v1/users/#{user_id}"
+
+      get "/v1/users/#{@user_id}/get/#{@authentication_token}"
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
-      response_json['data']['username'].should == 'Test1User'
+      response_json['data']['username'].should == 'Test3User'
     end
 
     it "does not update a user with duplicate email parameters" do
-      post "/v1/users", "user"=> @param
-      last_response.status.should == 200
-
 
       @param['email'] = 'test1@test.com'
-      @param['username'] = 'Test1User'
+      @param['username'] = 'Test2User'
       post "/v1/users", "user"=>@param
       last_response.status.should == 200
-      response_json = JSON.parse(last_response.body)
-      user_id = response_json['data']['userid']
 
-      @param["email"] = 'test@test.com'
+      @param["email"] = 'test1@test.com'
       @param['username'] = 'Test2User'
-      put "/v1/users/#{user_id}", "user"=> @param
+      put "/v1/users/#{@user_id}/update/#{@authentication_token}", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -353,25 +429,20 @@ describe Wadja::API do
     end
 
     it "does not creates a new user with duplicate username parameters" do
-      post "/v1/users", "user"=> @param
-      last_response.status.should == 200
-
 
       @param['email'] = 'test1@test.com'
       @param['username'] = 'Test1User'
       post "/v1/users", "user"=>@param
       last_response.status.should == 200
-      response_json = JSON.parse(last_response.body)
-      user_id = response_json['data']['userid']
 
       @param["email"] = 'test1@test.com'
-      @param['username'] = 'TestUser'
-      put "/v1/users/#{user_id}", "user"=> @param
+      @param['username'] = 'Test1User'
+      put "/v1/users/#{@user_id}/update/#{@authentication_token}", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
       response_json['data'].should == nil
-      response_json['meta']['code'].should == '002'
+      response_json['meta']['code'].should == '001'
       response_json['meta']['error_message']['username'].should == ["has already been taken"]
     end
 

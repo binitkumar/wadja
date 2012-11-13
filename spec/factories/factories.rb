@@ -4,11 +4,11 @@ FactoryGirl.define do
   factory :user1,:class=>User do |u|
     u.birth_date Date.today
     u.country_id Country.first.id
-    u.email 'test@test.com'
+    u.email 'test100@test.com'
     u.email_verified true
     u.name 'Test user'
     u.password '123456'
-    u.username 'TestUser'
+    u.username 'Test100User'
     u.photo_url '/assets/test.png'
     u.gender 'Male'
     u.connection_id 1
@@ -20,11 +20,11 @@ FactoryGirl.define do
   factory :user2,:class=>User do |u|
     u.birth_date Date.today
     u.country_id Country.first.id
-    u.email 'test@test.com'
+    u.email 'test101@test.com'
     u.email_verified true
     u.name 'Test user'
     u.password '123456'
-    u.username 'Test1User'
+    u.username 'Test101User'
     u.photo_url '/assets/test.png'
     u.gender 'Male'
     u.connection_id 1
