@@ -26,8 +26,11 @@ module Wadja
           response_hash['meta']['error_message'] = nil
           response_hash['data'] = authentication_details.get_details
           token = SecureRandom.urlsafe_base64(16)
-          authentication_details.authentication_token = token
-          authentication_details.save
+          user = User.find_by_username params[:username] if params[:username]
+          user = User.find_by_email params[:email] if params[:email]
+
+          user.authentication_token = token
+          user.save
           response_hash['data']['authentication_token'] = token
         else
           status 400

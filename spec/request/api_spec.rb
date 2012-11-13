@@ -11,6 +11,7 @@ describe Wadja::API do
 
   describe "POST /auth/authenticate" do
 
+    #Initializing parmeters before each request
     before :each do
       @param = { :birth_date=>  Date.today.strftime("%Y-%m-%d"),:country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> false }
       @username_password = {:username=>'TestUser', :password=>'123456'}
@@ -18,12 +19,12 @@ describe Wadja::API do
     end
 
     it "returns true for valid username and password " do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
-      post "/auth/authenticate" , @username_password.to_json
+      post "/v1/auth/authenticate" , @username_password.to_json
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
 
@@ -31,16 +32,17 @@ describe Wadja::API do
       response_json['meta']['code'].should == '000'
       response_json['meta']['error_message'].should == nil
       response_json['data']['id'].should == user_id
+      response_json['data']['authentication_token'].should_not == nil
     end
 
     it "returns false for invalid username and password " do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
       @username_password['password'] = '234567'
-      post "/auth/authenticate" , @username_password.to_json
+      post "/v1/auth/authenticate" , @username_password.to_json
 
       last_response.status.should == 400
       response_json = JSON.parse(last_response.body)
@@ -50,28 +52,29 @@ describe Wadja::API do
     end
 
     it "returns true for valid email and password " do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
-      post "/auth/authenticate" , @email_password.to_json
+      post "/v1/auth/authenticate" , @email_password.to_json
 
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       response_json['meta']['code'].should == '000'
       response_json['meta']['error_message'].should == nil
       response_json['data']['id'].should == user_id
+      response_json['data']['authentication_token'].should_not == nil
     end
 
     it "returns false for invalid email and password " do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
       @email_password['password'] = '234567'
-      post "/auth/authenticate" , @email_password.to_json
+      post "/v1/auth/authenticate" , @email_password.to_json
 
       last_response.status.should == 400
       response_json = JSON.parse(last_response.body)
@@ -84,7 +87,7 @@ describe Wadja::API do
   describe "GET /users/:id" do
 
       it "returns invalid id if user id is nil" do
-        get "/users"
+        get "/v1/users"
         last_response.status.should == 404
 
         response_json = JSON.parse(last_response.body)
@@ -94,7 +97,7 @@ describe Wadja::API do
       end
 
       it "returns nil on user id not available" do
-        get "/users/1000"
+        get "/v1/users/1000"
         last_response.status.should == 404
 
         response_json = JSON.parse(last_response.body)
@@ -115,7 +118,7 @@ describe Wadja::API do
 
         #todo Please be clarified with request field
 
-        get "/users/#{user.id}"
+        get "/v1/users/#{user.id}"
         last_response.status.should == 200
 
         response_json = JSON.parse(last_response.body)
@@ -143,7 +146,7 @@ describe Wadja::API do
       end
 
       it "returns invalid integer for alphanumeric id" do
-        get "/users/1ab"
+        get "/v1/users/1ab"
         last_response.status.should == 404
 
         response_json = JSON.parse(last_response.body)
@@ -164,7 +167,7 @@ describe Wadja::API do
     end
     it "creates a new user with valid parameters" do
 
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
 
       response_json = JSON.parse(last_response.body)
@@ -177,7 +180,7 @@ describe Wadja::API do
     it "does not creates a new user with missing birth data parameters" do
       @param.delete(:birth_date)
       #param = { :country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> false }
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -188,7 +191,7 @@ describe Wadja::API do
 
     it "does not creates a new user with missing country parameters" do
       @param.delete(:country_id)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -199,7 +202,7 @@ describe Wadja::API do
 
     it "does not creates a new user with missing email parameters" do
       @param.delete(:email)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -210,7 +213,7 @@ describe Wadja::API do
 
     it "does not creates a new user with missing email verified parameters" do
       @param.delete(:email_verified)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -220,7 +223,7 @@ describe Wadja::API do
     end
     it "does not creates a new user with missing name parameters" do
       @param.delete(:name)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -230,7 +233,7 @@ describe Wadja::API do
     end
     it "does not creates a new user with missing password parameters" do
       @param.delete(:password)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -240,7 +243,7 @@ describe Wadja::API do
     end
     it "does not creates a new user with missing username parameters" do
       @param.delete(:username)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -250,7 +253,7 @@ describe Wadja::API do
     end
     it "does not creates a new user with missing photo url parameters" do
       @param.delete(:photo_url)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -260,7 +263,7 @@ describe Wadja::API do
     end
     it "does not creates a new user with missing gender parameters" do
       @param.delete(:gender)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -270,7 +273,7 @@ describe Wadja::API do
     end
     it "does not creates a new user with missing connection id parameters" do
       @param.delete(:connection_id)
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -280,9 +283,9 @@ describe Wadja::API do
     end
 
     it "does not creates a new user with duplicate email parameters" do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -293,10 +296,10 @@ describe Wadja::API do
     end
 
     it "does not creates a new user with duplicate username parameters" do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       @param['email'] = 'test1@test.com'
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -312,35 +315,35 @@ describe Wadja::API do
     end
 
     it "upates user with valid parameters" do
-      post "/users", "user"=>@param
+      post "/v1/users", "user"=>@param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
       @param['username'] = "Test1User"
-      put "/users/#{user_id}",:user=>@param
+      put "/v1/users/#{user_id}",:user=>@param
       last_response.status.should == 200
 
-      get "/users/#{user_id}"
+      get "/v1/users/#{user_id}"
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       response_json['data']['username'].should == 'Test1User'
     end
 
     it "does not update a user with duplicate email parameters" do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
 
 
       @param['email'] = 'test1@test.com'
       @param['username'] = 'Test1User'
-      post "/users", "user"=>@param
+      post "/v1/users", "user"=>@param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
       @param["email"] = 'test@test.com'
       @param['username'] = 'Test2User'
-      put "/users/#{user_id}", "user"=> @param
+      put "/v1/users/#{user_id}", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -350,20 +353,20 @@ describe Wadja::API do
     end
 
     it "does not creates a new user with duplicate username parameters" do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
 
 
       @param['email'] = 'test1@test.com'
       @param['username'] = 'Test1User'
-      post "/users", "user"=>@param
+      post "/v1/users", "user"=>@param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
       @param["email"] = 'test1@test.com'
       @param['username'] = 'TestUser'
-      put "/users/#{user_id}", "user"=> @param
+      put "/v1/users/#{user_id}", "user"=> @param
       last_response.status.should == 400
 
       response_json = JSON.parse(last_response.body)
@@ -381,20 +384,20 @@ describe Wadja::API do
     end
 
     it 'returns false for username already existing in the database' do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
 
-      get '/users/checkusernameavailability/TestUser'
+      get '/v1/users/checkusernameavailability/TestUser'
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       response_json['data']['available'].should == false
     end
 
     it 'returns true for username which is not existing in the database' do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
 
-      get '/users/checkusernameavailability/Test1User'
+      get '/v1/users/checkusernameavailability/Test1User'
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       response_json['data']['available'].should == true
@@ -409,11 +412,12 @@ describe Wadja::API do
     end
 
     it "deletes user from database on valid user id" do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
-      delete "/users/#{user_id}"
+
+      delete "/v1/users/#{user_id}"
       response_json = JSON.parse(last_response.body)
       last_response.status.should == 200
       response_json['meta']['code'].should == '000'
@@ -422,12 +426,12 @@ describe Wadja::API do
     end
 
     it "gives invalid user id message if user id is invalid" do
-      post "/users", "user"=> @param
+      post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
       user_id = response_json['data']['userid']
 
-      delete "/users/1000"
+      delete "/v1/users/1000"
       response_json = JSON.parse(last_response.body)
       last_response.status.should == 400
       response_json['meta']['code'].should == '100'
