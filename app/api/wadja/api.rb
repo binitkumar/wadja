@@ -30,6 +30,7 @@ module Wadja
           user = User.find_by_username params[:username] if params[:username]
           user = User.find_by_email params[:email] if params[:email]
           user.update_attribute(:authentication_token,token)
+          user.update_attribute(:online,true)
 
           response_hash['data']['authentication_token'] = token
         else
@@ -58,6 +59,7 @@ module Wadja
         orig_user= User.find_by_authentication_token(params[:authentication_token])
         if user == orig_user
           user.update_attribute(:authentication_token,nil)
+          user.update_attribute(:online,false)
           response_hash['meta']['code'] = '000'
           response_hash['data'] = 'Logout successful'
           response_hash['meta']['error_message'] = nil
@@ -68,6 +70,11 @@ module Wadja
           status 400
         end
         response_hash
+      end
+
+      post "forgot" do
+        Mailer.forgot_username_password.deliver
+        {'message'=>'Mail sent successfully'}
       end
     end
 
@@ -118,23 +125,33 @@ module Wadja
         @response['meta'] = Hash.new
 
         begin
-          if params[:id].to_i.to_s == params[:id].to_s
-            user = User.where(:id=>params[:id].to_i).first
-            if user.nil?
-              ResponseHandler.set_invalid_response(@response,'001')
-              @response['meta']['error_message'] = "User doesn't exist"
-              status 404
+          user = User.where(:id=>params[:id].to_i).first
+          orig_user = User.where(:authentication_token=>params[:authentication_token]).first
+          if user == orig_user
+            if params[:id].to_i.to_s == params[:id].to_s
+
+              if user.nil?
+                ResponseHandler.set_invalid_response(@response,'001')
+                @response['meta']['error_message'] = "User doesn't exist"
+                status 404
+              else
+                @response['data'] = user.get_details
+                @response['meta']['code'] = '000'
+                status 200
+              end
             else
-              @response['data'] = user.get_details
-              @response['meta']['code'] = '000'
-              status 200
+              ResponseHandler.set_invalid_response @response
+              @response['meta']['code'] = '100'
+              @response['meta']['error_message'] = 'Invalid id parameter'
+              @response['meta']['data'] = nil
+              status 404
             end
+
           else
-            ResponseHandler.set_invalid_response @response
             @response['meta']['code'] = '100'
-            @response['meta']['error_message'] = 'Invalid id parameter'
+            @response['meta']['error_message'] = 'Invalid user credentials'
             @response['meta']['data'] = nil
-            status 404
+            status 401
           end
         rescue
           ResponseHandler.set_invalid_response @response

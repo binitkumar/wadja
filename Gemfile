@@ -30,6 +30,7 @@ end
 
 gem 'jquery-rails'
 gem "bcrypt-ruby", :require => "bcrypt"
+gem 'sendgrid'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'

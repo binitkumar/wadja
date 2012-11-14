@@ -61,6 +61,7 @@ describe Wadja::API do
 
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
+      User.find(user_id).online.should == true
       response_json['meta']['code'].should == '000'
       response_json['meta']['error_message'].should == nil
       response_json['data']['id'].should == user_id
@@ -70,8 +71,6 @@ describe Wadja::API do
     it "returns false for invalid email and password " do
       post "/v1/users", "user"=> @param
       last_response.status.should == 200
-      response_json = JSON.parse(last_response.body)
-      user_id = response_json['data']['userid']
 
       @email_password['password'] = '234567'
       post "/v1/auth/authenticate" , @email_password.to_json
@@ -107,6 +106,7 @@ describe Wadja::API do
     it " terminates the session and updates authentication token to nil with valid user id and authentication token" do
       get "/v1/auth/#{@user_id}/killsession/#{@authentication_token}"
       last_response.status.should == 200
+      User.find(@user_id).online.should == false
       response_json = JSON.parse(last_response.body)
       response_json['data'].should == 'Logout successful'
       response_json['meta']['code'].should == '000'
@@ -117,6 +117,7 @@ describe Wadja::API do
       @user_id = 100
       get "/v1/auth/#{@user_id}/killsession/#{@authentication_token}"
       last_response.status.should == 400
+      User.find(@user_id).online.should == true
       response_json = JSON.parse(last_response.body)
       response_json['data'].should == nil
       response_json['meta']['code'].should == '100'
@@ -141,14 +142,14 @@ describe Wadja::API do
   describe "GET /users/:id/get/:authentication_token" do
 
     before :each do
-      @param = { :birth_date=>  Date.today.strftime("%Y-%m-%d"),:country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> false }
+      @param = { :birth_date=>  Date.today.strftime("%Y-%m-%d"),:country_id => Country.first.id.to_s ,:email=>"test@test.com", :email_verified =>true, :name=> "Test user",:password=> "123456",:username =>"TestUser", :photo_url=> "/assets/test.png", :gender => "Male", :connection_id=> "1", :online=> true }
       @username_password = {:username=>'TestUser', :password=>'123456'}
       @email_password    = {:email=>'test@test.com', :password=>'123456'}
 
       post "/v1/users", "user"=> @param
       last_response.status.should == 200
       response_json = JSON.parse(last_response.body)
-      user_id = response_json['data']['userid']
+      @user_id = response_json['data']['userid']
 
       post "/v1/auth/authenticate" , @username_password.to_json
       last_response.status.should == 200
@@ -168,60 +169,53 @@ describe Wadja::API do
 
       it "returns nil on user id not available" do
         get "/v1/users/1000/get/#{@authentication_token}"
-        last_response.status.should == 404
+        last_response.status.should == 401
 
         response_json = JSON.parse(last_response.body)
         response_json['data'].should == nil
-        response_json['meta']['code'].should == '001'
-        response_json['meta']['error_message'].should == "User doesn't exist"
+        response_json['meta']['code'].should == '100'
+        response_json['meta']['error_message'].should == "Invalid user credentials"
       end
 
 
       it "returns an user by id" do
 
-        user = FactoryGirl.create(:user1)
-        user.requests_mades << FactoryGirl.build(:requests_made1)
-        user.requests_mades << FactoryGirl.build(:requests_made2)
-        user.requests_mades << FactoryGirl.build(:requests_made3)
-        user.point = FactoryGirl.build(:point)
-        user.notifications << FactoryGirl.build(:first_notification)
-
         #todo Please be clarified with request field
 
-        get "/v1/users/#{user.id}/get/#{@authentication_token}"
+        get "/v1/users/#{@user_id}/get/#{@authentication_token}"
         last_response.status.should == 200
 
         response_json = JSON.parse(last_response.body)
-        response_json['data']['id'].should == user.id
-        response_json['data']['username'].should == 'Test100User'
+        response_json['data']['id'].should == @user_id
+        response_json['data']['username'].should == 'TestUser'
         response_json['data']['name'].should == 'Test user'
-        response_json['data']['email'].should == 'test100@test.com'
+        response_json['data']['email'].should == 'test@test.com'
         response_json['data']['email_verified'].should == true
-        response_json['data']['country_iso'].should == user.country.iso
-        response_json['data']['birth_date'].should == user.birth_date.strftime("%d/%m/%Y")
-        response_json['data']['online'].should == user.online
+        response_json['data']['country_iso'].should == Country.first.iso
+        response_json['data']['birth_date'].should == Date.today.strftime("%d/%m/%Y")
+        response_json['data']['online'].should == true
         response_json['data']['photo_url'].should == "/assets/test.png"
         response_json['data']['gender'].should == "Male"
-        response_json['data']['points'].should == 12
-        response_json['data']['requests']['ask'].should == 1
-        response_json['data']['requests']['give'].should == 2
+        response_json['data']['points'].should == 0
+        response_json['data']['requests']['ask'].should == 0
+        response_json['data']['requests']['give'].should == 0
 
         #todo: Take clarification for privacy
         puts "Take clarification for privacy"
         response_json['data']['privacy'].should == 'Yet to be clarified'
 
-        response_json['data']['notifications'].should == 1
+        response_json['data']['notifications'].should == 0
         response_json['meta']['code'].should == '000'
         response_json['meta']['error_message'].should == nil
       end
 
       it "returns invalid integer for alphanumeric id" do
         get "/v1/users/1ab/get/#{@authentication_token}"
-        last_response.status.should == 404
+        last_response.status.should == 401
 
         response_json = JSON.parse(last_response.body)
         response_json['data'].should == nil
-        response_json['meta']['error_message'].should == 'Invalid id parameter'
+        response_json['meta']['error_message'].should == 'Invalid user credentials'
         response_json['meta']['code'].should == '100'
 
       end
